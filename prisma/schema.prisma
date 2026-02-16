@@ -50,6 +50,64 @@ model Product {
   @@map("products")
 }
 
+model Category {
+  id          String  @id @default(ulid())
+  name        String
+  description String?
+  slug        String  @unique
+  imageUrl    String?
+  isActice    Boolean @default(true)
+
+  product Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug, isActice])
+  @@map("categories")
+}
+
+model OrderItem {
+  id       String  @id @default(ulid())
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId, productId])
+  @@map("order_items")
+}
+
+model Order {
+  id              String      @id @default(ulid())
+  orderNumber     String      @unique @default(cuid())
+  status          OrderStatus @default(PENDING)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  shippingAddress String?
+
+  orderItems OrderItem[]
+  payment    Payment?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cartId String?
+  cart   Cart?   @relation(fields: [cartId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, orderNumber, status])
+  @@map("orders")
+}
+
 enum Role {
   ADMIN
   USER
