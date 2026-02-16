@@ -108,6 +108,41 @@ model Order {
   @@map("orders")
 }
 
+model Cart {
+  id String @id @default(ulid())
+
+  orders     Order[]
+  checkedOut Boolean @default(false)
+
+  cartItems CartItem[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("carts")
+}
+
+model CartItem {
+  id       String @id @default(ulid())
+  quantity Int    @default(1)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  cartId String?
+  cart   Cart?   @relation(fields: [cartId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId, productId])
+  @@map("cart_items")
+}
+
 enum Role {
   ADMIN
   USER
