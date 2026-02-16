@@ -143,6 +143,27 @@ model CartItem {
   @@map("cart_items")
 }
 
+model Payment {
+  id            String        @id @default(ulid())
+  amount        Decimal       @db.Decimal(10, 2)
+  status        PaymentStatus @default(PENDING)
+  currency      String        @default("USD")
+  paymentMethod String?
+  transactionId String?
+
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId, userId, transactionId])
+  @@map("payments")
+}
+
 enum Role {
   ADMIN
   USER
