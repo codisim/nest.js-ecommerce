@@ -27,6 +27,29 @@ model User {
   @@map("users")
 }
 
+model Product {
+  id          String  @id @default(ulid())
+  name        String
+  description String?
+  price       Decimal @db.Decimal(10, 2)
+  stock       Int     @default(0)
+  sku         String  @unique
+  imageUrl    String?
+  isActice    Boolean @default(true)
+
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sku, categoryId, isActice])
+  @@map("products")
+}
+
 enum Role {
   ADMIN
   USER
