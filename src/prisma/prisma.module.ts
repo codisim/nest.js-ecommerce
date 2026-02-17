@@ -1,48 +1,9 @@
-import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
+import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
 
-@Module({})
-export class PrismaModule extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-
-    constructor() {
-        const adapter = new PrismaPg({
-            connectionUrl: process.env.DATABASE_URL
-        });
-
-
-        super({
-            adapter,
-            log: process.env.NODE_ENV === "development" ? ['query', 'warn', 'error'] : ['error'],
-        })
-    }
-
-    async onModuleInit() {
-        await this.$connect();
-        console.log('Databage connedted successfully..!');
-    }
-
-    async onModuleDestroy() {
-        await this.$disconnect();
-        console.log('Database Disconnedted');
-    }
-
-    async cleanDatabase() {
-        if (process.env.NODE_ENV === 'production')
-            throw new Error("cannnot clean database in production")
-
-        const models = Reflect.ownKeys(this).filter(
-            (key) => typeof key === 'string' && !key.startsWith('_'),
-        );
-
-        return Promise.all(
-            models.map((model) => {
-                if (typeof model === 'string') {
-                    return this[model].deleteMany();
-                }
-            })
-        )
-
-    }
-
-}
+@Global()
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
