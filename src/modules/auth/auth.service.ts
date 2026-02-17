@@ -1,14 +1,20 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { randomBytes } from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
     private readonly SALT_ROUNDS = 12;
-    constructor(private prisma: PrismaService, private readonly jwtService: JwtService) { }
+    constructor(
+        private prisma: PrismaService,
+        private jwtService: JwtService,
+        private configService: ConfigService,
+    ) { }
 
     async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
         const { email, password, firstName, lastName } = registerDto;
@@ -22,24 +28,40 @@ export class AuthService {
         if (existingUser)
             throw new ConflictException('User already exists')
 
-        const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
+        try {
+            const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
 
-        const user = await this.prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                firstName,
-                lastName
-            },
-            select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-                password: false
+            const user = await this.prisma.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    firstName,
+                    lastName
+                },
+                select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    role: true,
+                    password: false
+                }
+            })
+
+            const tokens = await this.generateTokens(user.id, user.email);
+
+            await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+            return {
+                ...tokens,
+                user
             }
-        })
+
+        } catch (error) {
+            console.error('Error during user registration: ', error);
+            throw new InternalServerErrorException('Internal server error in registration');
+        }
+
 
 
     }
@@ -49,13 +71,34 @@ export class AuthService {
 
 
     // generate access and refresh token
-    private async generateTokens(userId: string, email: string): Promise<{ accessToken: string, refreshToken: string }> {
+    private async generateTokens(
+        userId: string,
+        email: string
+    ): Promise<{ accessToken: string, refreshToken: string }> {
+
+        const payload = {
+            sub: userId,
+            email
+        };
+        const refreshId = randomBytes(32).toString('hex');
+
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync({
-                sub: userId,
-                email
-            })
+            this.jwtService.signAsync(payload, { expiresin: '15m' }),
+            this.jwtService.signAsync({ ...payload, refreshId }, { expiresin: '7d' })
         ])
+
+        return [accessToken, refreshToken];
+
+    }
+
+
+    async updateRefreshToken(userId: string, refreshToken: string): Promise<void> {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshToken }
+        });
+
+
     }
 
 

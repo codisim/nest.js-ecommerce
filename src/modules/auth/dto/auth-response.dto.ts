@@ -9,6 +9,6 @@ export class AuthResponseDto {
         email: string;
         firstName: string | null;
         lastName: string | null;
-        roles: Role
+        role: Role
     }
 }
