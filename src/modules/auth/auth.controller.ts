@@ -4,6 +4,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { Body, Controller, UseGuards } from '@nestjs/common';
 import { RefreshTokenGuard } from './guards/refresh-token-guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -19,5 +20,13 @@ export class AuthController {
         return await this.authService.refreshTokens(userId);
     }
 
+    // logout use and invalid refresh token
+    @UseGuards(JwtAuthGuard)
+    async logout(@GetUser('id') userId: string): Promise<{ message: string }> {
+        await this.authService.logout(userId);
+        return {
+            message: 'Logged out successfully'
+        }
+    }
 
 }
