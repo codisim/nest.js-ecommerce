@@ -61,13 +61,7 @@ export class AuthService {
             console.error('Error during user registration: ', error);
             throw new InternalServerErrorException('Internal server error in registration');
         }
-
-
-
     }
-
-
-
 
 
     // generate access and refresh token
@@ -92,16 +86,39 @@ export class AuthService {
     }
 
 
+
+    // update refresh token in db
     async updateRefreshToken(userId: string, refreshToken: string): Promise<void> {
         await this.prisma.user.update({
             where: { id: userId },
             data: { refreshToken }
         });
-
-
     }
 
 
+    // refresh access token
+    async refreshTokens(userId: string): Promise<AuthResponseDto> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true
+            }
+        });
 
+        if (!user)
+            throw new InternalServerErrorException('User not found');
 
+        const tokens = await this.generateTokens(user.id, user.email);
+        await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user
+        }
+
+    }
 }

@@ -3,6 +3,7 @@ import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { Body, Controller, UseGuards } from '@nestjs/common';
 import { RefreshTokenGuard } from './guards/refresh-token-guard';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -14,8 +15,8 @@ export class AuthController {
 
 
     @UseGuards(RefreshTokenGuard)
-    async refresh() {
-
+    async refresh(@GetUser('id') userId: string): Promise<AuthResponseDto> {
+        return await this.authService.refreshTokens(userId);
     }
 
 
