@@ -19,6 +19,14 @@ async function bootstrap() {
     })
   )
 
+  // enable CORS
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') ?? 'http://localhost:3000',
+    Credential: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap().catch((err) => {
