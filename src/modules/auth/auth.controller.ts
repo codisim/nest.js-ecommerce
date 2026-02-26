@@ -1,7 +1,7 @@
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { RefreshTokenGuard } from './guards/refresh-token-guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -13,6 +13,7 @@ export class AuthController {
 
     // register API
     @Post('register')
+    @HttpCode(201)
     async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
         return this.authService.register(registerDto);
     }
@@ -20,6 +21,7 @@ export class AuthController {
 
     // refresh access token
     @Post('refresh')
+    @HttpCode(HttpStatus.OK)
     @UseGuards(RefreshTokenGuard)
     async refresh(@GetUser('id') userId: string): Promise<AuthResponseDto> {
         return await this.authService.refreshTokens(userId);
@@ -27,6 +29,7 @@ export class AuthController {
 
     // logout use and invalid refresh token
     @Post('logout')
+    @HttpCode(HttpStatus.OK)
     @UseGuards(JwtAuthGuard)
     async logout(@GetUser('id') userId: string): Promise<{ message: string }> {
         await this.authService.logout(userId);
@@ -38,7 +41,8 @@ export class AuthController {
 
     // login
     @Post('login')
-    async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto>{
+    @HttpCode(HttpStatus.OK)
+    async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
         return await this.authService.login(loginDto);
     }
 
