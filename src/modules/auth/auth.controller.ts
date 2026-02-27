@@ -82,6 +82,21 @@ export class AuthController {
     @Post('logout')
     @HttpCode(HttpStatus.OK)
     @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({
+        summary: 'Logout user',
+        description: 'Logout user and invalidate refresh token. Access token must be valid'
+    })
+
+    @ApiResponse({
+        status: 200,
+        description: 'Logged out successfully',
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Invalid or expired access token',
+    })
     async logout(@GetUser('id') userId: string): Promise<{ message: string }> {
         await this.authService.logout(userId);
         return {
