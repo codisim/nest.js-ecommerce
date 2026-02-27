@@ -20,11 +20,9 @@ export class AuthService {
     async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
         const { email, password, firstName, lastName } = registerDto;
 
-        const existingUser = this.prisma.user.findUnique({
-            where: {
-                email
-            }
-        })
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email },
+        });
 
         if (existingUser)
             throw new ConflictException('User already exists')
@@ -68,21 +66,25 @@ export class AuthService {
     // generate access and refresh token
     private async generateTokens(
         userId: string,
-        email: string
-    ): Promise<{ accessToken: string, refreshToken: string }> {
-
-        const payload = {
-            sub: userId,
-            email
-        };
-        const refreshId = randomBytes(32).toString('hex');
-
+        email: string,
+    ): Promise<{ accessToken: string; refreshToken: string }> {
+        const payload = { sub: userId, email };
+        const refreshId = randomBytes(16).toString('hex');
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync(payload, { expiresin: '15m' }),
-            this.jwtService.signAsync({ ...payload, refreshId }, { expiresin: '7d' })
-        ])
+            this.jwtService.signAsync(payload, {
+                expiresIn: '15m',
+                secret: this.configService.get<string>('JWT_SECRET'),
+            }),
+            this.jwtService.signAsync(
+                { ...payload, refreshId },
+                {
+                    expiresIn: '7d',
+                    secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+                },
+            ),
+        ]);
 
-        return [accessToken, refreshToken];
+        return { accessToken, refreshToken };
 
     }
 
