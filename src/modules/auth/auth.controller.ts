@@ -6,7 +6,7 @@ import { RefreshTokenGuard } from './guards/refresh-token-guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -51,6 +51,29 @@ export class AuthController {
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
     @UseGuards(RefreshTokenGuard)
+    @ApiBearerAuth('refresh-token')
+    @ApiOperation({
+        summary: 'Refresh access token',
+        description: 'Refresh access token using refresh token. Access token must be expired or about to expire'
+    })
+
+    @ApiResponse({
+        status: 200,
+        description: 'Access token refreshed successfully',
+        type: AuthResponseDto
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Invalid or expired refresh token',
+    })
+
+    @ApiResponse({
+        status: 500,
+        description: 'Internal server error',
+    })
+
+
     async refresh(@GetUser('id') userId: string): Promise<AuthResponseDto> {
         return await this.authService.refreshTokens(userId);
     }
