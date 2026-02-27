@@ -108,6 +108,31 @@ export class AuthController {
     // login
     @Post('login')
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Login user',
+        description: 'Login user with email and password'
+    })
+    
+    @ApiResponse({
+        status: 200,
+        description: 'User logged in successfully',
+        type: AuthResponseDto
+    })
+
+    @ApiResponse({
+        status: 400,
+        description: 'Bad request',
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Invalid email or password',
+    })
+
+    @ApiResponse({
+        status: 500,
+        description: 'Internal server error',
+    })
     async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
         return await this.authService.login(loginDto);
     }
