@@ -22,6 +22,26 @@ export class AuthController {
         type: AuthResponseDto
     })
 
+    @ApiResponse({
+        status: 400,
+        description: 'Bad request',
+    })
+
+    @ApiResponse({
+        status: 409,
+        description: 'User already exists',
+    })
+
+    @ApiResponse({
+        status: 500,
+        description: 'Internal server error',
+    })
+
+    @ApiResponse({
+        status: 429,
+        description: 'Too many request. Rate limit exceeded'
+    })
+
     async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
         return this.authService.register(registerDto);
     }
