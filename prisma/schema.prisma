@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -8,78 +7,68 @@ datasource db {
 }
 
 model User {
-  id           String  @id @default(ulid())
-  email        String  @unique
+  id           String    @id @default(ulid())
+  email        String    @unique
   password     String
   firstName    String
   lastName     String?
-  role         Role    @default(USER)
+  role         Role      @default(USER)
   refreshToken String?
-
-  orders   Order[]
-  carts    Cart[]
-  payments Payment[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  carts        Cart[]
+  orders       Order[]
+  payments     Payment[]
 
   @@index([email])
   @@map("users")
 }
 
 model Product {
-  id          String  @id @default(ulid())
+  id          String      @id @default(ulid())
   name        String
   description String?
-  price       Decimal @db.Decimal(10, 2)
-  stock       Int     @default(0)
-  sku         String  @unique
+  price       Decimal     @db.Decimal(10, 2)
+  stock       Int         @default(0)
+  sku         String      @unique
   imageUrl    String?
-  isActice    Boolean @default(true)
-
-  orderItems OrderItem[]
-  cartItems  CartItem[]
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActice    Boolean     @default(true)
+  categoryId  String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
 
   @@index([sku, categoryId, isActice])
   @@map("products")
 }
 
 model Category {
-  id          String  @id @default(ulid())
+  id          String    @id @default(ulid())
   name        String
   description String?
-  slug        String  @unique
+  slug        String    @unique
   imageUrl    String?
-  isActice    Boolean @default(true)
-
-  product Product[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isActice    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     Product[]
 
   @@index([slug, isActice])
   @@map("categories")
 }
 
 model OrderItem {
-  id       String  @id @default(ulid())
-  quantity Int
-  price    Decimal @db.Decimal(10, 2)
-
+  id        String   @id @default(ulid())
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  orderId String
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
+  orderId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@index([orderId, productId])
   @@map("order_items")
@@ -91,53 +80,42 @@ model Order {
   status          OrderStatus @default(PENDING)
   totalAmount     Decimal     @db.Decimal(10, 2)
   shippingAddress String?
-
-  orderItems OrderItem[]
-  payment    Payment?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  cartId String?
-  cart   Cart?   @relation(fields: [cartId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId          String
+  cartId          String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
+  cart            Cart?       @relation(fields: [cartId], references: [id])
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment         Payment?
 
   @@index([userId, orderNumber, status])
   @@map("orders")
 }
 
 model Cart {
-  id String @id @default(ulid())
-
+  id         String     @id @default(ulid())
+  checkedOut Boolean    @default(false)
+  userId     String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  cartItems  CartItem[]
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders     Order[]
-  checkedOut Boolean @default(false)
-
-  cartItems CartItem[]
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("carts")
 }
 
 model CartItem {
-  id       String @id @default(ulid())
-  quantity Int    @default(1)
-
+  id        String   @id @default(ulid())
+  quantity  Int      @default(1)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  cartId String?
-  cart   Cart?   @relation(fields: [cartId], references: [id])
-
+  cartId    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  cart      Cart?    @relation(fields: [cartId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@index([cartId, productId])
   @@map("cart_items")
@@ -150,15 +128,12 @@ model Payment {
   currency      String        @default("USD")
   paymentMethod String?
   transactionId String?
-
-  orderId String @unique
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  orderId       String        @unique
+  userId        String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([orderId, userId, transactionId])
   @@map("payments")

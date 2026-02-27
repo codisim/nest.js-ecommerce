@@ -22,7 +22,7 @@ async function bootstrap() {
 
   // enable CORS
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN?.split(',') ?? 'http://localhost:5000',
     Credential: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -55,7 +55,7 @@ async function bootstrap() {
     },
       'refresh-token',
     )
-    .addServer(process.env.API_SERVER_URL ?? 'http://localhost:3000', 'Development Server')
+    .addServer(process.env.API_SERVER_URL ?? 'http://localhost:5000', 'Development Server')
     .build()
     ;
 
@@ -79,7 +79,7 @@ async function bootstrap() {
   });
 
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap().catch((err) => {
   Logger.error('Error starting server', err);
