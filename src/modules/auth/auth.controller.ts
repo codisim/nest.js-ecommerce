@@ -6,6 +6,7 @@ import { RefreshTokenGuard } from './guards/refresh-token-guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -14,6 +15,13 @@ export class AuthController {
     // register API
     @Post('register')
     @HttpCode(201)
+    @ApiOperation({ summary: 'Register a new user', description: 'Register a new user with email and password' })
+    @ApiResponse({
+        status: 201,
+        description: 'User registered successfully',
+        type: AuthResponseDto
+    })
+
     async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
         return this.authService.register(registerDto);
     }
