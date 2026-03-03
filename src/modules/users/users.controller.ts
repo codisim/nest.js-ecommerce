@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
 import { UsersService } from './users.service';
+import { UserResponseDto } from './dto/user-response.dto';
 
 
 
@@ -11,8 +12,6 @@ import { UsersService } from './users.service';
 @UseGuards(JwtAuthGuard, RoleGuard)
 
 @Controller('users')
-
-
 export class UsersController {
     constructor(private readonly userService: UsersService) {}
 
@@ -23,5 +22,10 @@ export class UsersController {
         status: 200, 
         description: 'The user profile has been successfully retrieved.',
         type: UserResponseDto
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
     })
 }
