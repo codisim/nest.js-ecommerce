@@ -26,7 +26,7 @@ export class UserResponseDto {
         description: 'The last name of the user',
         example: 'Doe'
     })
-    lastName: string;
+    lastName: string | null;
 
     @ApiProperty({
         description: 'The roles assigned to the user',
