@@ -1,9 +1,10 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
 import { UsersService } from './users.service';
 import { UserResponseDto } from './dto/user-response.dto';
+import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
 
 
 
@@ -13,13 +14,13 @@ import { UserResponseDto } from './dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
-    constructor(private readonly userService: UsersService) {}
+    constructor(private readonly userService: UsersService) { }
 
     // get current user profile
     @Get('me')
     @ApiOperation({ summary: 'Get current user profile' })
-    @ApiResponse({ 
-        status: 200, 
+    @ApiResponse({
+        status: 200,
         description: 'The user profile has been successfully retrieved.',
         type: UserResponseDto
     })
@@ -28,4 +29,8 @@ export class UsersController {
         status: 401,
         description: 'Unauthorized. The user is not authenticated or the token is invalid.'
     })
+
+    async getProfile(@Req() req: RequestWithUser): Promise<UserResponseDto> {
+        return await this.userService.getProfile(req.user.id);
+    }
 }
