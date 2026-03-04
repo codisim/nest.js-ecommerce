@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
 import { UsersService } from './users.service';
@@ -7,6 +7,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import type { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { Role } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 
@@ -82,6 +83,23 @@ export class UsersController {
 
     async getUserById(@Param('id') id: string): Promise<UserResponseDto> {
         return await this.userService.getUserById(id);
+    }
+
+    // current user can update their profile
+    @Get('me')
+    @ApiOperation({ summary: 'Update current user profile' })
+    @ApiBody({
+        type: UpdateUserDto,
+        description: 'The user profile data to update. Only the fields that need to be updated should be included in the request body.'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'The user profile has been successfully updated.',
+        type: UserResponseDto
+    })
+
+    async updateProfile(@Req() req: RequestWithUser): Promise<UserResponseDto> {
+        return await this.userService.getProfile(req.user.id);
     }
 
 }
