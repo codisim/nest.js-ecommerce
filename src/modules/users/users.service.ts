@@ -7,7 +7,10 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private readonly SOLT_ROUNDS: number = 10
+    ) { }
 
     async getProfile(userId: string): Promise<UserResponseDto> {
         const user = await this.prisma.user.findUnique({
@@ -116,7 +119,7 @@ export class UsersService {
         if (isSamed)
             throw new NotFoundException('New password cannot be the same as current password');
 
-        const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+        const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, this.SOLT_ROUNDS);
 
         await this.prisma.user.update({
             where: { id: userId },
@@ -125,6 +128,24 @@ export class UsersService {
             }
         })
         return { message: 'Password changed successfully' };
+    }
+
+
+    // delete current user  
+    async deleteUser(userId: string): Promise<{ message: string }> {
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId }
+        })
+
+        if (!user)
+            throw new NotFoundException('User not found');
+
+        await this.prisma.user.delete({
+            where: { id: userId }
+        })
+
+        return { message: 'User deleted successfully' };
     }
 
 

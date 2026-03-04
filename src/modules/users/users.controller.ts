@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
@@ -156,4 +156,21 @@ export class UsersController {
         return await this.userService.changePassword(userId, changePasswordDto);
     }
 
+    // delete current user
+    @Delete('me')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Delete current user' })
+    @ApiResponse({
+        status: 200,
+        description: 'The user has been successfully deleted.'
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
+    })
+
+    async deleteCurrentUser(userId: string): Promise<{ message: string }> {
+        return await this.userService.deleteCurrentUser(userId); 
+    }
 }
