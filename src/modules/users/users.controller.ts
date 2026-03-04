@@ -87,7 +87,31 @@ export class UsersController {
 
     // current user can update their profile
     @Get('me')
+    @ApiOperation({ summary: 'Update current user profile' })
+    @ApiBody({
+        type: UpdateUserDto,
+        description: 'The user profile data to update. Only the fields that need to be updated should be included in the request body.'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'The user profile has been successfully updated.',
+        type: UserResponseDto
+    })
 
+    @ApiResponse({
+        status: 400,
+        description: 'Bad Request. The request body is invalid or missing required fields.'
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
+    })
+
+    @ApiResponse({
+        status: 409,
+        description: 'Conflict. The email address provided is already in use by another user.'
+    })
 
     async updateProfile(userId: string, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
         return await this.userService.updateProfile(userId, updateUserDto);
