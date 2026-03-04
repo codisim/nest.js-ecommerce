@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
@@ -87,19 +87,10 @@ export class UsersController {
 
     // current user can update their profile
     @Get('me')
-    @ApiOperation({ summary: 'Update current user profile' })
-    @ApiBody({
-        type: UpdateUserDto,
-        description: 'The user profile data to update. Only the fields that need to be updated should be included in the request body.'
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'The user profile has been successfully updated.',
-        type: UserResponseDto
-    })
 
-    async updateProfile(@Req() req: RequestWithUser): Promise<UserResponseDto> {
-        return await this.userService.getProfile(req.user.id);
+
+    async updateProfile(userId: string, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+        return await this.userService.updateProfile(userId, updateUserDto);
     }
 
 }
