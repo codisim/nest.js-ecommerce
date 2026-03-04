@@ -4,7 +4,9 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
 import { UsersService } from './users.service';
 import { UserResponseDto } from './dto/user-response.dto';
-import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
+import type { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
+import { Roles } from 'src/common/decorators/role.decorators';
+import { Role } from '@prisma/client';
 
 
 
@@ -33,4 +35,29 @@ export class UsersController {
     async getProfile(@Req() req: RequestWithUser): Promise<UserResponseDto> {
         return await this.userService.getProfile(req.user.id);
     }
+
+    // get all users (admin only)
+    @Get()
+    @Roles(Role.ADMIN)
+    @ApiOperation({ summary: 'Get all users (admin only)' })
+    @ApiResponse({
+        status: 200,
+        description: 'A list of all users has been successfully retrieved.',
+        type: [UserResponseDto]
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
+    })
+
+    @ApiResponse({
+        status: 403,
+        description: 'Forbidden. The user does not have the required permissions to access this resource.'
+    })
+
+    async getAllUsers(): Promise<UserResponseDto[]> {
+        return await this.userService.getAllUsers();
+    }
+
 }

@@ -27,4 +27,23 @@ export class UsersService {
         return user
     }
 
+
+    // get all users (admin only)
+    async getAllUsers(): Promise<UserResponseDto[]> {
+        const users = await this.prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+                password: false
+            }
+        })
+
+        return users;
+    }
+
 }

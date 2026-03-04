@@ -24,7 +24,8 @@ export class UserResponseDto {
 
     @ApiProperty({
         description: 'The last name of the user',
-        example: 'Doe'
+        example: 'Doe',
+        nullable: true
     })
     lastName: string | null;
 
