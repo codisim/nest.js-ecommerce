@@ -171,6 +171,30 @@ export class UsersController {
     })
 
     async deleteCurrentUser(userId: string): Promise<{ message: string }> {
-        return await this.userService.deleteCurrentUser(userId); 
+        return await this.userService.deleteUser(userId); 
+    }
+
+    // delete user by id (admin only)
+    @Delete(':id')
+    @Roles(Role.ADMIN)
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Delete user by id (admin only)' })
+    @ApiResponse({
+        status: 200,
+        description: 'The user has been successfully deleted.'
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
+    })
+
+    @ApiResponse({
+        status: 403,
+        description: 'Forbidden. The user does not have the required permissions to access this resource.'
+    })
+
+    async deleteUserById(@Param('id') id: string): Promise<{ message: string }> {
+        return await this.userService.deleteUserById(id);
     }
 }
