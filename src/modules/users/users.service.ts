@@ -49,4 +49,26 @@ export class UsersService {
         return users;
     }
 
+    // get user by id (admin only)
+    async getUserById(id: string): Promise<UserResponseDto> {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+                password: false
+            }
+        })
+
+        if (!user)
+            throw new NotFoundException('User not found');
+
+        return user
+    }
+
 }

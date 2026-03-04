@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleGuard } from 'src/common/guards/roles.guard';
@@ -58,6 +58,30 @@ export class UsersController {
 
     async getAllUsers(): Promise<UserResponseDto[]> {
         return await this.userService.getAllUsers();
+    }
+
+    // get user by id (admin only)
+    @Get(':id')
+    @Roles(Role.ADMIN)
+    @ApiOperation({ summary: 'Get user by id (admin only)' })
+    @ApiResponse({
+        status: 200,
+        description: 'The user has been successfully retrieved.',
+        type: UserResponseDto
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
+    })
+
+    @ApiResponse({
+        status: 403,
+        description: 'Forbidden. The user does not have the required permissions to access this resource.'
+    })
+
+    async getUserById(@Param('id') id: string): Promise<UserResponseDto> {
+        return await this.userService.getUserById(id);
     }
 
 }
