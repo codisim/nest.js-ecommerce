@@ -8,6 +8,7 @@ import type { RequestWithUser } from 'src/common/interfaces/request-with-user.in
 import { Roles } from 'src/common/decorators/role.decorators';
 import { Role } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 
 
@@ -119,40 +120,8 @@ export class UsersController {
 
     // change password (current user)
     @Get('me/password')
-    @ApiOperation({ summary: 'Change current user password' })
-    @ApiBody({
-        description: 'The data required to change the user password.',
-        schema: {
-            type: 'object',
-            properties: {
-                currentPassword: { type: 'string', example: 'currentPassword123' },
-                newPassword: { type: 'string', example: 'newPassword456' }
-            },
-            required: ['currentPassword', 'newPassword']
-        }
-    })
-    @ApiResponse({
-        status: 200,
-        description: 'The user password has been successfully changed.'
-    })
-
-    @ApiResponse({
-        status: 400,
-        description: 'Bad Request. The request body is invalid or missing required fields.'
-    })
-
-    @ApiResponse({
-        status: 401,
-        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
-    })
-
-    @ApiResponse({
-        status: 403,
-        description: 'Forbidden. The current password provided is incorrect.'
-    })
-
-    async changePassword(userId: string, @Body() changePasswordDto: { currentPassword: string, newPassword: string }): Promise<void> {
-        return await this.userService.changePassword(userId, changePasswordDto.currentPassword, changePasswordDto.newPassword);
+    async changePassword(userId: string, @Body() changePasswordDto: ChangePasswordDto): Promise<{ message: string   }> {
+        return await this.userService.changePassword(userId, changePasswordDto);
     }
 
 }
