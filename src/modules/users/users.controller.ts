@@ -120,6 +120,38 @@ export class UsersController {
 
     // change password (current user)
     @Get('me/password')
+    @ApiOperation({ summary: 'Change current user password' })
+    @ApiBody({
+        description: 'The data required to change the user password.',
+        schema: {
+            type: 'object',
+            properties: {
+                currentPassword: { type: 'string', example: 'currentPassword123' },
+                newPassword: { type: 'string', example: 'newPassword456' }
+            },
+            required: ['currentPassword', 'newPassword']
+        }
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'The user password has been successfully changed.'
+    })
+
+    @ApiResponse({
+        status: 400,
+        description: 'Bad Request. The request body is invalid or missing required fields.'
+    })
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. The user is not authenticated or the token is invalid.'
+    })
+
+    @ApiResponse({
+        status: 403,
+        description: 'Forbidden. The current password provided is incorrect.'
+    })
+
     async changePassword(userId: string, @Body() changePasswordDto: ChangePasswordDto): Promise<{ message: string   }> {
         return await this.userService.changePassword(userId, changePasswordDto);
     }
