@@ -40,6 +40,9 @@ export class UsersService {
                 createdAt: true,
                 updatedAt: true,
                 password: false
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         })
 
