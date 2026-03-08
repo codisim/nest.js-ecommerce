@@ -55,4 +55,16 @@ export class CategoryController {
     async findAll(@Query() queryDto: QueryCategoryDto) {
         return await this.categoryService.findAll(queryDto);
     }
+
+    // get category by id
+    @Get('/id')
+    @ApiOperation({ summary: 'Get category by id' })
+    @ApiResponse({
+        status: 200,
+        description: 'Get category by id successfully.....!',
+        type: CategoryResponseDto
+    })
+    async findById(@Query('id') id: string): Promise<CategoryResponseDto> {
+        return await this.categoryService.findById(id);
+    }
 }
