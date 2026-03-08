@@ -166,4 +166,26 @@ export class CategoryService {
 
         return this.formatCategory(updatedCategory, Number(updatedCategory._count.product));
     }
+
+    // delete category by id (admin only)
+
+    async deleteById(id: string): Promise<{ meassage: string }> {
+        const existingCategory = await this.prisma.category.findUnique({
+            where: { id }
+        });
+
+        if (!existingCategory) {
+            throw new NotFoundException('Category not found');
+        }
+
+        if(existingCategory._count.product > 0) {
+            throw new Error('Cannot delete category with associated products. Please remove the products first.');
+        }
+
+        await this.prisma.category.delete({
+            where: { id },
+        });
+
+        return { meassage: "Category deleted successfully" };
+    }
 }
