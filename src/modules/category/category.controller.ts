@@ -4,7 +4,7 @@ import { RoleGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CategoryResponseDto } from './dto/create-response.dto';
 import { QueryCategoryDto } from './dto/query-category.dto';
@@ -100,5 +100,31 @@ export class CategoryController {
 
     async updateById(@Param('id') id: string, updateCategoryDto: UpdateCategoryDto): Promise<CategoryResponseDto> {
         return await this.categoryService.updateById(id, updateCategoryDto);
+    }
+
+    // delete category by id (admin only)
+    @Delete('/id')
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({ summary: 'Delete category by id (admin only)' })
+    @ApiResponse({
+        status: 200,
+        description: 'Delete category by id successfully.....!',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Category not found',
+    })
+    @ApiResponse({
+        status: 403,
+        description: 'Forbidden. Only admins can delete categories.',
+    })  
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Please log in to delete categories.',
+    })
+    async deleteById(@Param('id') id: string): Promise<{meassage: string}> {
+        return await this.categoryService.deleteById(id);
     }
 }
