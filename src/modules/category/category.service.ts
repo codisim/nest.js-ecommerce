@@ -3,6 +3,7 @@ import { Category, Prisma, PrismaClient } from '@prisma/client';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { CategoryResponseDto } from './dto/create-response.dto';
 import { QueryCategoryDto } from './dto/query-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -123,5 +124,46 @@ export class CategoryService {
         }
 
         return this.formatCategory(category, Number(category._count.product));
+    }
+
+    // update category by id (admin only)
+
+    async updateById(id: string, updateCategoryDto: UpdateCategoryDto): Promise<CategoryResponseDto> {
+
+        const existingCategory = await this.prisma.category.findUnique({
+            where: { id }
+        });
+
+        if (!existingCategory) {
+            throw new NotFoundException('Category not found');
+        }
+
+
+        if (updateCategoryDto.slug && updateCategoryDto.slug !== existingCategory.slug) {
+            const existingCategoryWithSameSlug = await this.prisma.category.findUnique({
+                where: { slug: updateCategoryDto.slug }
+            });
+
+            if (existingCategoryWithSameSlug) {
+                throw new Error(updateCategoryDto.slug + " is already exist...!");
+            }
+        }
+
+        const updatedCategory = await this.prisma.category.update({
+            where: { id },
+            data: {
+                ...updateCategoryDto,
+                updatedAt: new Date(),
+            },
+            include: {
+                _count: {
+                    select: {
+                        product: true
+                    },
+                },
+            },
+        });
+
+        return this.formatCategory(updatedCategory, Number(updatedCategory._count.product));
     }
 }

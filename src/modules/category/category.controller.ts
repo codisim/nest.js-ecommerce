@@ -4,10 +4,11 @@ import { RoleGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CategoryResponseDto } from './dto/create-response.dto';
 import { QueryCategoryDto } from './dto/query-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 
 @ApiTags('categories')
@@ -66,5 +67,38 @@ export class CategoryController {
     })
     async findById(@Query('id') id: string): Promise<CategoryResponseDto> {
         return await this.categoryService.findById(id);
+    }
+
+    // update category by id (admin only)
+    @Patch('/id')
+    @UseGuards(JwtAuthGuard, RoleGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({ summary: 'Update category by id (admin only)' })
+    @ApiBody({ type: UpdateCategoryDto })
+
+    @ApiResponse({
+        status: 200,
+        description: 'Update category by id successfully.....!',
+        type: CategoryResponseDto
+    })
+
+    @ApiResponse({
+        status: 404,
+        description: 'Category not found',
+    })
+
+    @ApiResponse({
+        status: 403,
+        description: 'Forbidden. Only admins can update categories.',
+    })  
+
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Please log in to update categories.',
+    })
+
+    async updateById(@Param('id') id: string, updateCategoryDto: UpdateCategoryDto): Promise<CategoryResponseDto> {
+        return await this.categoryService.updateById(id, updateCategoryDto);
     }
 }
